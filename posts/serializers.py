@@ -1,15 +1,17 @@
 from rest_framework import serializers
 
 from posts.models import Post
+from users.serializers import SimpleUserSerializerData
 
 
 class PostSerializers(serializers.ModelSerializer):
     likes_count = serializers.IntegerField(read_only=True)
+    author_data = SimpleUserSerializerData(source='author', read_only=True)
 
     class Meta:
         model = Post
         read_only_fields = ['created_at', 'updated_at']
-        exclude = ['likes']
+        exclude = ['likes', 'author']
 
 
 class DateRangeSerializer(serializers.Serializer):

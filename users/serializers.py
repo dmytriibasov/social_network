@@ -70,3 +70,10 @@ class UserActivitySerializer(serializers.Serializer):
 
 class UserActivityQueryParamSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
+
+
+class SimpleUserSerializerData(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'username']

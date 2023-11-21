@@ -13,11 +13,14 @@ from posts.serializers import PostSerializers, DateRangeSerializer, LikeAnalytic
 
 # Create your views here.
 class PostsViewSet(ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.select_related('author').all()
     serializer_class = PostSerializers
     permission_classes = (IsAuthenticated, )
     ordering_fields = ['created_at']
     ordering = ['-created_at']
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
