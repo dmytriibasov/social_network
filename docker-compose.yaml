@@ -1,0 +1,99 @@
+version: '3.9'
+
+
+x-common-env-variables: &common-env-variables
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+  DEBUG: 'True'
+
+x-db-config: &db-config
+  DB_NAME: ${DB_NAME}
+  DB_USER: ${DB_USER}
+  DB_PASSWORD: ${DB_PASSWORD}
+  DB_HOST: 'db'
+  DB_PORT: 5432
+
+services:
+  db:
+    image: postgres:14.4-alpine
+    container_name: db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - backend
+    ports:
+      - '5432:5432'
+
+  app:
+    build: .
+    container_name: app
+    command: bash -c "exec invoke devStart"
+    environment:
+      <<: *common-env-variables
+      <<: *db-config
+    volumes:
+      - .:/code
+    ports:
+      - '8000:8000'
+    networks:
+      - backend
+    depends_on:
+      - db
+      - redis
+
+  adminer:
+    image: adminer
+    container_name: db_adminer
+    ports:
+     - '8080:8080'
+    networks:
+      - backend
+
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis:/.data:rw
+    networks:
+      - backend
+
+  celery:
+    build: .
+    container_name: celery_worker
+    command: celery -A social_network worker -l info
+    environment:
+      <<: *common-env-variables
+      <<: *db-config
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+    volumes:
+      - .:/code
+    networks:
+      - backend
+    depends_on:
+      - redis
+
+  celery-beat:
+    build: .
+    container_name: celery_beat
+    command: celery -A social_network beat -l info
+    environment:
+      <<: *common-env-variables
+      <<: *db-config
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+    volumes:
+      - .:/code
+    networks:
+      - backend
+    depends_on:
+      - redis
+
+networks:
+  backend:
+
+volumes:
+  database:
+  redis:
