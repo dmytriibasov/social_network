@@ -1,8 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -29,16 +27,6 @@ class SignUpSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
-
-
-class LogInSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        user = self.user
-        if user:
-            user.last_login = timezone.now()
-            user.save(update_fields=['last_login'])
-        return data
 
 
 class LogOutSerializer(serializers.Serializer):
