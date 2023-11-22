@@ -8,8 +8,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt import views as jwt_views
 
 from users.permissions import NotAuthenticated
-from users.serializers import SignUpSerializer, LogOutSerializer, LogInSerializer, UserActivitySerializer, \
-    UserActivityQueryParamSerializer
+from users.serializers import (SignUpSerializer, LogOutSerializer, UserActivitySerializer,
+                               UserActivityQueryParamSerializer)
 
 
 class SignUpView(CreateAPIView):
@@ -19,7 +19,7 @@ class SignUpView(CreateAPIView):
 
 
 class LogInView(jwt_views.TokenObtainPairView):
-    serializer_class = LogInSerializer
+    permission_classes = (NotAuthenticated, )
 
 
 class LogOutView(APIView):
